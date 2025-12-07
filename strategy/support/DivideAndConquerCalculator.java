@@ -31,46 +31,6 @@ import util.Constants;
  *   ...
  *   Level log(n): n merges of size 1
  *
- * With Naive Convolution (only method used):
- *   Work per level = O(n²)
- *   Total levels = O(log n)
- *   Total complexity = O(n² log n)
- *
- * ═══════════════════════════════════════════════════════════════════════════════
- * ADVANTAGES OVER SEQUENTIAL METHODS
- * ═══════════════════════════════════════════════════════════════════════════════
- *
- * 1. PARALLELIZABLE: At each level, all subtrees are independent
- *    - Can process left and right halves concurrently
- *    - Natural fit for multi-core systems
- *
- * 2. DIFFERENT PARADIGM: Hierarchical vs sequential
- *    - Shows alternative algorithmic structure
- *    - Educational value for research comparison
- *
- * 3. SIMPLE CONVOLUTION: Uses naive convolution only
- *    - No FFT overhead or complexity
- *    - Easier to understand and maintain
- *
- * ═══════════════════════════════════════════════════════════════════════════════
- * COMPARISON WITH OTHER METHODS
- * ═══════════════════════════════════════════════════════════════════════════════
- *
- * GF (Sequential DP):
- *   - O(n²) time
- *   - Simple, fast for small n
- *   - Not parallelizable
- *
- * FFT (Transform-based):
- *   - O(n log² n) time
- *   - Fast for large n
- *   - Complex implementation
- *
- * Divide & Conquer (Naive):
- *   - O(n² log n) time
- *   - Parallelizable structure
- *   - Simple convolution, demonstrates different approach
- *
  * @author Dang Nguyen Le
  */
 public class DivideAndConquerCalculator extends AbstractSupportCalculator {
@@ -243,13 +203,6 @@ public class DivideAndConquerCalculator extends AbstractSupportCalculator {
 
         // ─────────────────────────────────────────────────────────────────
         // CONQUER: Recursively compute distributions
-        // ─────────────────────────────────────────────────────────────────
-        // NOTE: This is where parallelization can happen!
-        // In parallel implementation:
-        //   Future<double[]> leftFuture = executor.submit(() -> divideAndConquer(probs, start, mid));
-        //   Future<double[]> rightFuture = executor.submit(() -> divideAndConquer(probs, mid, end));
-        //   double[] leftDist = leftFuture.get();
-        //   double[] rightDist = rightFuture.get();
         // ─────────────────────────────────────────────────────────────────
         double[] leftDist = divideAndConquer(probs, start, mid);
         double[] rightDist = divideAndConquer(probs, mid, end);

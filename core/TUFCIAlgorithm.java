@@ -29,17 +29,6 @@ import java.util.*;
  * preventing threshold inflation.
  *
  * ═══════════════════════════════════════════════════════════════════════════════
- * PRUNING STRATEGIES
- * ═══════════════════════════════════════════════════════════════════════════════
- *
- * 1. EARLY TERMINATION: Stop when support < threshold (PQ is max-heap by support)
- * 2. FREQUENT-ONLY: Only check items with support ≥ minsup
- * 3. UPPER BOUND: Skip if min(sup(X), sup({e})) < threshold
- * 4. TIGHTER BOUND: Also check cached 2-itemset subsets
- * 5. TIDSET SIZE: Skip GF computation if tidset.size() < threshold
- * 6. CACHE REUSE: Store computed supports and tidsets
- *
- * ═══════════════════════════════════════════════════════════════════════════════
  * THREE-PHASE ARCHITECTURE
  * ═══════════════════════════════════════════════════════════════════════════════
  *
@@ -305,7 +294,7 @@ public class TUFCIAlgorithm extends AbstractFrequentItemsetMiner {
         }
 
         // ─────────────────────────────────────────────────────────────────────
-        // STEP 3: Build singleton cache (OPTIMIZATION)
+        // STEP 3: Build singleton cache
         // Pre-create all singleton itemsets to avoid repeated object creation
         // ─────────────────────────────────────────────────────────────────────
         int vocabSize = vocab.size();
@@ -322,14 +311,7 @@ public class TUFCIAlgorithm extends AbstractFrequentItemsetMiner {
         }
 
         // ─────────────────────────────────────────────────────────────────────
-        // STEP 4: Build FREQUENT-ONLY item list (OPTIMIZATION)
-        // ─────────────────────────────────────────────────────────────────────
-        // WHY: Non-frequent items (support < minsup) can NEVER:
-        //   - Produce valid extensions (antimonotonicity)
-        //   - Violate closure (their support is always lower)
-        //
-        // BENEFIT: If vocab=1000 but only 100 frequent items,
-        //          iteration count reduced by 90%!
+        // STEP 4: Build FREQUENT-ONLY item list
         // ─────────────────────────────────────────────────────────────────────
 
         // Sort by support DESC for early violation detection
@@ -424,13 +406,11 @@ public class TUFCIAlgorithm extends AbstractFrequentItemsetMiner {
 
             // ═══════════════════════════════════════════════════════════════
             // CORE: Check closure + Generate extensions
-            // This is where the magic happens!
             // ═══════════════════════════════════════════════════════════════
             ClosureCheckResult result = checkClosureAndGenerateExtensions(candidate);
 
             // ═══════════════════════════════════════════════════════════════
             // ADD TO HEAP ONLY IF CLOSED
-            // This prevents threshold inflation!
             // ═══════════════════════════════════════════════════════════════
             if (result.isClosed) {
                 closedTopK.insert(candidate.itemset, candidate.support, candidate.probability);
@@ -467,17 +447,6 @@ public class TUFCIAlgorithm extends AbstractFrequentItemsetMiner {
                     pq.add(ext);
                 }
             }
-        }
-
-        // Print statistics
-        if (verbose) {
-            System.out.println("\n=== Mining Statistics ===");
-            System.out.println("  Candidates processed: " + totalCandidatesProcessed);
-            System.out.println("  Closed patterns found: " + closedPatternsFound);
-            System.out.println("  Extensions skipped: " + extensionsSkipped);
-            System.out.println("  Cache hits: " + cacheHits);
-            System.out.println("  Tighter bound pruning: " + tighterBoundPruning);
-            System.out.println("  Tidset size pruning: " + tidsetSizePruning);
         }
     }
 
